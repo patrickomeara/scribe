@@ -261,6 +261,20 @@ class GetFromFormRequestTest extends BaseLaravelTest
         $this->assertEquals('New description. This is a dummy test rule.', $parsed['dummy']['description']);
     }
 
+    /** @test */
+    public function route_params_are_available_within_form_request()
+    {
+        $strategy = new BodyParameters\GetFromFormRequest(new DocumentationConfig([]));
+        $route = (new Route(['POST'], "/test/{post}", ['uses' => [TestController::class, 'withFormRequestUsingRouteMethodWithinRules']]))->name('test.post');
+        $method = new \ReflectionMethod(TestController::class, 'withFormRequestUsingRouteMethodWithinRules');
+        $parametersFromFormRequest = $strategy->getParametersFromFormRequest($method, $route);
+        $this->assertArraySubset([
+            'title' => ['required'],
+            'author' => ['required'],
+            'date' => ['required'],
+        ], $parametersFromFormRequest);
+    }
+
     protected function fetchViaBodyParams(\ReflectionMethod $method): array
     {
         $strategy = new BodyParameters\GetFromFormRequest(new DocumentationConfig([]));
